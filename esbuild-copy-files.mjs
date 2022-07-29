@@ -10,10 +10,11 @@ const copyFilesPlugin = (options = {}) => ({
 				)
 			);
 
-			const ops = Object.entries(options).map(async ([source, target]) =>
-				fs.cp(source, target)
+			await Promise.all(
+				Object.entries(options).map(async ([source, target]) =>
+					fs.cp(source, target)
+				)
 			);
-			await Promise.all(ops);
 		});
 	},
 });
