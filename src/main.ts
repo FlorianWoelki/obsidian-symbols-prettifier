@@ -1,8 +1,12 @@
-import { Editor, MarkdownView, Plugin } from 'obsidian';
+import { MarkdownView, Plugin } from 'obsidian';
 
 const characterMap: { [key: string]: string } = {
 	'->': '→',
 	'<-': '←',
+	'<->': '↔',
+	'<=>': '⇔',
+	'<=': '⇐',
+	'=>': '⇒',
 };
 
 export default class SymbolsPrettifier extends Plugin {
@@ -16,19 +20,27 @@ export default class SymbolsPrettifier extends Plugin {
 
 			if (view) {
 				const cursor = view.editor.getCursor();
-				console.log(event.key);
 				if (event.key === ' ') {
 					const line = view.editor.getLine(cursor.line);
-					const firstPreviousCharacter = line.charAt(cursor.ch - 1);
-					const secondPreviousCharacter = line.charAt(cursor.ch - 2);
-					const replaceCharacter =
-						characterMap[
-							secondPreviousCharacter + firstPreviousCharacter
-						];
-					if (replaceCharacter) {
+					let from = -1;
+					let sequence = '';
+					for (let i = cursor.ch - 1; i >= 0; i--) {
+						if (line.charAt(i) === ' ') {
+							const excludeWhitespace = i + 1;
+							from = excludeWhitespace;
+							sequence = line.slice(excludeWhitespace, cursor.ch);
+							break;
+						} else if (i === 0) {
+							from = i;
+							sequence = line.slice(i, cursor.ch);
+							break;
+						}
+					}
+					const replaceCharacter = characterMap[sequence];
+					if (replaceCharacter && from !== -1) {
 						view.editor.replaceRange(
 							replaceCharacter,
-							{ line: cursor.line, ch: cursor.ch - 2 },
+							{ line: cursor.line, ch: from },
 							{ line: cursor.line, ch: cursor.ch }
 						);
 					}
