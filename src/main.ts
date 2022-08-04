@@ -7,6 +7,7 @@ const characterMap: { [key: string]: string } = {
 	'<=>': '⇔',
 	'<=': '⇐',
 	'=>': '⇒',
+	'--': '–',
 };
 
 export default class SymbolsPrettifier extends Plugin {
