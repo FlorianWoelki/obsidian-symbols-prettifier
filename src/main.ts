@@ -1,4 +1,4 @@
-import { MarkdownView, Plugin } from 'obsidian';
+import { Editor, MarkdownView, Plugin } from 'obsidian';
 
 const characterMap: { [key: string]: string } = {
 	'->': '→',
@@ -12,8 +12,6 @@ const characterMap: { [key: string]: string } = {
 export default class SymbolsPrettifier extends Plugin {
 	onload() {
 		console.log('loading symbols prettifier');
-
-		this.registerCodeMirror;
 
 		this.registerDomEvent(document, 'keypress', (event: KeyboardEvent) => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
@@ -37,7 +35,11 @@ export default class SymbolsPrettifier extends Plugin {
 						}
 					}
 					const replaceCharacter = characterMap[sequence];
-					if (replaceCharacter && from !== -1) {
+					if (
+						replaceCharacter &&
+						from !== -1 &&
+						!this.isCursorInCodeBlock(view.editor)
+					) {
 						view.editor.replaceRange(
 							replaceCharacter,
 							{ line: cursor.line, ch: from },
@@ -51,5 +53,28 @@ export default class SymbolsPrettifier extends Plugin {
 
 	onunload() {
 		console.log('unloading symbols prettifier');
+	}
+
+	private isCursorInCodeBlock(editor: Editor): boolean {
+		// @ts-expect-error, not typed
+		const codeMirror = editor.cm;
+		const selection = editor.getCursor();
+
+		const codeBlock = /```\w*[^`]+```*/;
+		const cursor = codeMirror.cm.getSearchCursor(codeBlock, {
+			ch: 0,
+			line: 0,
+		});
+
+		while (cursor.findNext()) {
+			if (
+				selection.line >= cursor.from().line &&
+				selection.line <= cursor.to().line
+			) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
