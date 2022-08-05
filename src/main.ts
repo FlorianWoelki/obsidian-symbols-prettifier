@@ -1,4 +1,5 @@
-import { Editor, MarkdownView, Plugin } from 'obsidian';
+import { Editor, MarkdownView, Notice, Plugin } from 'obsidian';
+import { SearchCursor } from 'src/search';
 
 const characterMap: { [key: string]: string } = {
 	'->': '→',
@@ -14,7 +15,7 @@ export default class SymbolsPrettifier extends Plugin {
 	onload() {
 		console.log('loading symbols prettifier');
 
-		this.registerDomEvent(document, 'keypress', (event: KeyboardEvent) => {
+		this.registerDomEvent(document, 'keydown', (event: KeyboardEvent) => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
 			if (view) {
@@ -57,21 +58,13 @@ export default class SymbolsPrettifier extends Plugin {
 	}
 
 	private isCursorInCodeBlock(editor: Editor): boolean {
-		// @ts-expect-error, not typed
-		const codeMirror = editor.cm;
-		const selection = editor.getCursor();
+		const codeBlock = /```\w*[^`]+```/;
+		const searchCursor = new SearchCursor(editor.getValue(), codeBlock, 0);
 
-		const codeBlock = /```\w*[^`]+```*/;
-		const cursor = codeMirror.cm.getSearchCursor(codeBlock, {
-			ch: 0,
-			line: 0,
-		});
-
-		while (cursor.findNext()) {
-			if (
-				selection.line >= cursor.from().line &&
-				selection.line <= cursor.to().line
-			) {
+		let cursor: RegExpMatchArray | undefined;
+		while ((cursor = searchCursor.findNext()) !== undefined) {
+			const offset = editor.posToOffset(editor.getCursor());
+			if (searchCursor.from() <= offset && searchCursor.to() >= offset) {
 				return true;
 			}
 		}
