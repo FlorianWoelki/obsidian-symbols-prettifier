@@ -1,4 +1,5 @@
-import { MarkdownView, Plugin } from 'obsidian';
+import { Editor, MarkdownView, Notice, Plugin } from 'obsidian';
+import { SearchCursor } from 'src/search';
 
 const characterMap: { [key: string]: string } = {
 	'->': '→',
@@ -7,6 +8,7 @@ const characterMap: { [key: string]: string } = {
 	'<=>': '⇔',
 	'<=': '⇐',
 	'=>': '⇒',
+	'--': '–',
 };
 
 export default class SymbolsPrettifier extends Plugin {
@@ -54,7 +56,11 @@ export default class SymbolsPrettifier extends Plugin {
 						}
 					}
 					const replaceCharacter = characterMap[sequence];
-					if (replaceCharacter && from !== -1) {
+					if (
+						replaceCharacter &&
+						from !== -1 &&
+						!this.isCursorInCodeBlock(view.editor)
+					) {
 						view.editor.replaceRange(
 							replaceCharacter,
 							{ line: cursor.line, ch: from },
@@ -68,5 +74,20 @@ export default class SymbolsPrettifier extends Plugin {
 
 	onunload() {
 		console.log('unloading symbols prettifier');
+	}
+
+	private isCursorInCodeBlock(editor: Editor): boolean {
+		const codeBlock = /```\w*[^`]+```/;
+		const searchCursor = new SearchCursor(editor.getValue(), codeBlock, 0);
+
+		let cursor: RegExpMatchArray | undefined;
+		while ((cursor = searchCursor.findNext()) !== undefined) {
+			const offset = editor.posToOffset(editor.getCursor());
+			if (searchCursor.from() <= offset && searchCursor.to() >= offset) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
