@@ -15,6 +15,23 @@ export default class SymbolsPrettifier extends Plugin {
 
 		this.registerCodeMirror;
 
+		this.addCommand({
+			id: 'symbols-prettifier-format-symbols',
+			name: 'Prettify existing symbols in document',
+			callback: () => {
+				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					let value = view.editor.getValue();
+					Object.entries(characterMap).forEach(([matchChar, replaceChar]) => {
+						const pattern = new RegExp(matchChar, 'g');
+						value = value.replace(pattern, replaceChar);
+					});
+
+					view.editor.setValue(value);
+				}
+			},
+		});
+
 		this.registerDomEvent(document, 'keypress', (event: KeyboardEvent) => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
