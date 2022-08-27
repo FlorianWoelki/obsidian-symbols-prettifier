@@ -19,12 +19,57 @@ export default class SymbolsPrettifier extends Plugin {
 			id: 'symbols-prettifier-format-symbols',
 			name: 'Prettify existing symbols in document',
 			callback: () => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+				const view =
+					this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (view) {
 					let value = view.editor.getValue();
-					Object.entries(characterMap).forEach(([matchChar, replaceChar]) => {
-						const pattern = new RegExp(matchChar, 'g');
-						value = value.replace(pattern, replaceChar);
+					const codeBlocks = this.getCodeBlocks(value);
+					let matchedChars: { from: number; to: number }[] = [];
+
+					const matchChars = Object.entries(characterMap).reduce(
+						(prev, [curr]) => {
+							if (prev.length === 0) {
+								return prev + curr;
+							}
+							return prev + '|' + curr;
+						},
+						''
+					);
+
+					const searchCursor = new SearchCursor(
+						value,
+						new RegExp(
+							'(?<![\\w\\d])' + matchChars + '(?![\\w\\d])'
+						),
+						0
+					);
+					while (searchCursor.findNext() !== undefined) {
+						matchedChars.push({
+							from: searchCursor.from(),
+							to: searchCursor.to(),
+						});
+					}
+
+					matchedChars = matchedChars.filter((matchedChar) => {
+						return !codeBlocks.some(
+							(cb) =>
+								cb.from <= matchedChar.from &&
+								cb.to >= matchedChar.to
+						);
+					});
+
+					let diff: number = 0;
+					matchedChars.forEach((matchedChar) => {
+						const symbol = value.substring(
+							matchedChar.from - diff,
+							matchedChar.to - diff
+						);
+						value =
+							value.substring(0, matchedChar.from - diff) +
+							characterMap[symbol] +
+							value.substring(matchedChar.to - diff);
+
+						diff += symbol.length - characterMap[symbol].length;
 					});
 
 					view.editor.setValue(value);
@@ -72,6 +117,19 @@ export default class SymbolsPrettifier extends Plugin {
 
 	onunload() {
 		console.log('unloading symbols prettifier');
+	}
+
+	private getCodeBlocks(input: string) {
+		const result: { from: number; to: number }[] = [];
+
+		const codeBlock = /```\w*[^`]+```/;
+		const searchCursor = new SearchCursor(input, codeBlock, 0);
+
+		while (searchCursor.findNext() !== undefined) {
+			result.push({ from: searchCursor.from(), to: searchCursor.to() });
+		}
+
+		return result;
 	}
 
 	private isCursorInCodeBlock(editor: Editor): boolean {
