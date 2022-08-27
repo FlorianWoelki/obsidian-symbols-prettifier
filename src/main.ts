@@ -15,8 +15,6 @@ export default class SymbolsPrettifier extends Plugin {
 	onload() {
 		console.log('loading symbols prettifier');
 
-		this.registerCodeMirror;
-
 		this.addCommand({
 			id: 'symbols-prettifier-format-symbols',
 			name: 'Prettify existing symbols in document',
@@ -34,7 +32,7 @@ export default class SymbolsPrettifier extends Plugin {
 			},
 		});
 
-		this.registerDomEvent(document, 'keypress', (event: KeyboardEvent) => {
+		this.registerDomEvent(document, 'keydown', (event: KeyboardEvent) => {
 			const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
 			if (view) {
