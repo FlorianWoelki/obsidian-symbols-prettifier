@@ -22,6 +22,10 @@ const characterMap: CharacterMap = {
 		transform: '!important',
 		classes: 'symbols-prettifier-important',
 	},
+	'!unclear': {
+		transform: '!unclear',
+		classes: 'symbols-prettifier-unclear',
+	},
 };
 
 export default class SymbolsPrettifier extends Plugin {
@@ -155,6 +159,12 @@ export default class SymbolsPrettifier extends Plugin {
 						if (typeof replaceCharacter === 'string') {
 							view.editor.replaceRange(
 								replaceCharacter,
+								{ line: cursor.line, ch: from },
+								{ line: cursor.line, ch: cursor.ch }
+							);
+						} else {
+							view.editor.replaceRange(
+								`<span class="${replaceCharacter.classes}">${replaceCharacter.transform}</span>`,
 								{ line: cursor.line, ch: from },
 								{ line: cursor.line, ch: cursor.ch }
 							);
