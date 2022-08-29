@@ -4,6 +4,7 @@ import { SearchCursor } from 'src/search';
 interface HTMLObject {
 	transform: string;
 	classes: string;
+	element: string;
 }
 
 interface CharacterMap {
@@ -21,10 +22,12 @@ const characterMap: CharacterMap = {
 	'!important': {
 		transform: '!important',
 		classes: 'symbols-prettifier-important',
+		element: '<span class="symbols-prettifier-important">!important</span>',
 	},
-	'!unclear': {
-		transform: '!unclear',
+	'?unclear': {
+		transform: '?unclear',
 		classes: 'symbols-prettifier-unclear',
+		element: '<span class="symbols-prettifier-unclear">?unclear</span>',
 	},
 };
 
@@ -35,15 +38,11 @@ export default class SymbolsPrettifier extends Plugin {
 		this.addCommand({
 			id: 'symbols-prettifier-add-important',
 			name: 'Add important symbol',
-			callback: () => {
-				const view =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					const cursor = view.editor.getCursor();
-					view.editor.replaceRange(
-						'<span class="symbols-prettifier-important">!important</span>',
-						cursor
-					);
+			editorCallback: (editor) => {
+				const cursor = editor.getCursor();
+				const symbol = characterMap['!important'];
+				if (typeof symbol !== 'string') {
+					editor.replaceRange(symbol.element, cursor);
 				}
 			},
 		});
@@ -51,15 +50,11 @@ export default class SymbolsPrettifier extends Plugin {
 		this.addCommand({
 			id: 'symbols-prettifier-add-unclear',
 			name: 'Add unclear symbol',
-			callback: () => {
-				const view =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					const cursor = view.editor.getCursor();
-					view.editor.replaceRange(
-						'<span class="symbols-prettifier-unclear">!unclear</span>',
-						cursor
-					);
+			editorCallback: (editor) => {
+				const cursor = editor.getCursor();
+				const symbol = characterMap['?unclear'];
+				if (typeof symbol !== 'string') {
+					editor.replaceRange(symbol.element, cursor);
 				}
 			},
 		});
@@ -67,65 +62,65 @@ export default class SymbolsPrettifier extends Plugin {
 		this.addCommand({
 			id: 'symbols-prettifier-format-symbols',
 			name: 'Prettify existing symbols in document',
-			callback: () => {
-				const view =
-					this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (view) {
-					let value = view.editor.getValue();
-					const codeBlocks = this.getCodeBlocks(value);
-					let matchedChars: { from: number; to: number }[] = [];
+			editorCallback: (editor) => {
+				let value = editor.getValue();
+				const codeBlocks = this.getCodeBlocks(value);
+				let matchedChars: { from: number; to: number }[] = [];
 
-					const matchChars = Object.entries(characterMap).reduce(
-						(prev, [curr]) => {
-							if (prev.length === 0) {
-								return prev + curr;
-							}
-							return prev + '|' + curr;
-						},
-						''
-					);
+				const matchChars = Object.entries(characterMap).reduce(
+					(prev, [curr]) => {
+						if (prev.length === 0) {
+							return prev + this.escapeRegExp(curr);
+						}
+						return prev + '|' + this.escapeRegExp(curr);
+					},
+					''
+				);
 
-					const searchCursor = new SearchCursor(
-						value,
-						new RegExp(
-							'(?<![\\w\\d])' + matchChars + '(?![\\w\\d])'
-						),
-						0
-					);
-					while (searchCursor.findNext() !== undefined) {
-						matchedChars.push({
-							from: searchCursor.from(),
-							to: searchCursor.to(),
-						});
-					}
-
-					matchedChars = matchedChars.filter((matchedChar) => {
-						return !codeBlocks.some(
-							(cb) =>
-								cb.from <= matchedChar.from &&
-								cb.to >= matchedChar.to
-						);
+				const searchCursor = new SearchCursor(
+					value,
+					new RegExp('(?<![\\w\\d])' + matchChars + '(?![\\w\\d])'),
+					0
+				);
+				while (searchCursor.findNext() !== undefined) {
+					matchedChars.push({
+						from: searchCursor.from(),
+						to: searchCursor.to(),
 					});
+				}
 
-					let diff: number = 0;
-					matchedChars.forEach((matchedChar) => {
-						const symbol = value.substring(
-							matchedChar.from - diff,
-							matchedChar.to - diff
-						);
+				matchedChars = matchedChars.filter((matchedChar) => {
+					return !codeBlocks.some(
+						(cb) =>
+							cb.from <= matchedChar.from &&
+							cb.to >= matchedChar.to
+					);
+				});
+
+				let diff: number = 0;
+				matchedChars.forEach((matchedChar) => {
+					const symbol = value.substring(
+						matchedChar.from - diff,
+						matchedChar.to - diff
+					);
+
+					const character = characterMap[symbol];
+					if (typeof character === 'string') {
 						value =
 							value.substring(0, matchedChar.from - diff) +
-							characterMap[symbol] +
+							character +
 							value.substring(matchedChar.to - diff);
+						diff += symbol.length - character.length;
+					} else {
+						value =
+							value.substring(0, matchedChar.from - diff) +
+							character.element +
+							value.substring(matchedChar.to - diff);
+						diff += symbol.length - character.element.length;
+					}
+				});
 
-						const character = characterMap[symbol];
-						if (typeof character === 'string') {
-							diff += symbol.length - character.length;
-						}
-					});
-
-					view.editor.setValue(value);
-				}
+				editor.setValue(value);
 			},
 		});
 
@@ -177,6 +172,10 @@ export default class SymbolsPrettifier extends Plugin {
 
 	onunload() {
 		console.log('unloading symbols prettifier');
+	}
+
+	private escapeRegExp(string: string): string {
+		return string.replace(/[.*+?^!${}()|[\]\\]/g, '\\$&');
 	}
 
 	private getCodeBlocks(input: string) {
