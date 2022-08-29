@@ -1,7 +1,16 @@
 import { Editor, MarkdownView, Notice, Plugin } from 'obsidian';
 import { SearchCursor } from 'src/search';
 
-const characterMap: { [key: string]: string } = {
+interface HTMLObject {
+	transform: string;
+	classes: string;
+}
+
+interface CharacterMap {
+	[key: string]: string | HTMLObject;
+}
+
+const characterMap: CharacterMap = {
 	'->': '→',
 	'<-': '←',
 	'<->': '↔',
@@ -9,11 +18,47 @@ const characterMap: { [key: string]: string } = {
 	'<=': '⇐',
 	'=>': '⇒',
 	'--': '–',
+	'!important': {
+		transform: '!important',
+		classes: 'symbols-prettifier-important',
+	},
 };
 
 export default class SymbolsPrettifier extends Plugin {
 	onload() {
 		console.log('loading symbols prettifier');
+
+		this.addCommand({
+			id: 'symbols-prettifier-add-important',
+			name: 'Add important symbol',
+			callback: () => {
+				const view =
+					this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					const cursor = view.editor.getCursor();
+					view.editor.replaceRange(
+						'<span class="symbols-prettifier-important">!important</span>',
+						cursor
+					);
+				}
+			},
+		});
+
+		this.addCommand({
+			id: 'symbols-prettifier-add-unclear',
+			name: 'Add unclear symbol',
+			callback: () => {
+				const view =
+					this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (view) {
+					const cursor = view.editor.getCursor();
+					view.editor.replaceRange(
+						'<span class="symbols-prettifier-unclear">!unclear</span>',
+						cursor
+					);
+				}
+			},
+		});
 
 		this.addCommand({
 			id: 'symbols-prettifier-format-symbols',
@@ -69,7 +114,10 @@ export default class SymbolsPrettifier extends Plugin {
 							characterMap[symbol] +
 							value.substring(matchedChar.to - diff);
 
-						diff += symbol.length - characterMap[symbol].length;
+						const character = characterMap[symbol];
+						if (typeof character === 'string') {
+							diff += symbol.length - character.length;
+						}
 					});
 
 					view.editor.setValue(value);
@@ -104,11 +152,13 @@ export default class SymbolsPrettifier extends Plugin {
 						from !== -1 &&
 						!this.isCursorInCodeBlock(view.editor)
 					) {
-						view.editor.replaceRange(
-							replaceCharacter,
-							{ line: cursor.line, ch: from },
-							{ line: cursor.line, ch: cursor.ch }
-						);
+						if (typeof replaceCharacter === 'string') {
+							view.editor.replaceRange(
+								replaceCharacter,
+								{ line: cursor.line, ch: from },
+								{ line: cursor.line, ch: cursor.ch }
+							);
+						}
 					}
 				}
 			}
