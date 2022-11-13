@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-symbols-prettifier",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "This plugin enables to prettify common text symbols like arrows.",
 	"main": "main.js",
 	"scripts": {
