@@ -11,24 +11,23 @@ interface CharacterMap {
 	[key: string]: string | HTMLObject;
 }
 
-const characterMap: CharacterMap = {
-	'->': '→',
-	'<-': '←',
-	'<->': '↔',
-	'<=>': '⇔',
-	'<=': '⇐',
-	'=>': '⇒',
-	'--': '–',
-	'!important': {
-		transform: '!important',
-		classes: 'symbols-prettifier-important',
-		element: '<span class="symbols-prettifier-important">!important</span>',
-	},
-	'?unclear': {
-		transform: '?unclear',
-		classes: 'symbols-prettifier-unclear',
-		element: '<span class="symbols-prettifier-unclear">?unclear</span>',
-	},
+const characterMap: CharacterMap = Object.create(null);
+characterMap['->'] = '→';
+characterMap['<-'] = '←';
+characterMap['<->'] = '↔';
+characterMap['<=>'] = '⇔';
+characterMap['<='] = '⇐';
+characterMap['=>'] = '⇒';
+characterMap['--'] = '–';
+characterMap['!important'] = {
+  transform: '!important',
+  classes: 'symbols-prettifier-important',
+  element: '<span class="symbols-prettifier-important">!important</span>',
+};
+characterMap['?unclear'] = {
+  transform: '?unclear',
+  classes: 'symbols-prettifier-unclear',
+  element: '<span class="symbols-prettifier-unclear">?unclear</span>',
 };
 
 export default class SymbolsPrettifier extends Plugin {
@@ -158,6 +157,7 @@ export default class SymbolsPrettifier extends Plugin {
 								{ line: cursor.line, ch: cursor.ch }
 							);
 						} else {
+              debugger;
 							view.editor.replaceRange(
 								`<span class="${replaceCharacter.classes}">${replaceCharacter.transform}</span>`,
 								{ line: cursor.line, ch: from },
