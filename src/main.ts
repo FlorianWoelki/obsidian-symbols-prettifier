@@ -157,7 +157,6 @@ export default class SymbolsPrettifier extends Plugin {
 								{ line: cursor.line, ch: cursor.ch }
 							);
 						} else {
-              debugger;
 							view.editor.replaceRange(
 								`<span class="${replaceCharacter.classes}">${replaceCharacter.transform}</span>`,
 								{ line: cursor.line, ch: from },
