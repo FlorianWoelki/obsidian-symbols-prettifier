@@ -147,7 +147,7 @@ export default class SymbolsPrettifier extends Plugin {
           if (
             replaceCharacter &&
             from !== -1 &&
-            !this.isCursorInCodeBlock(view.editor)
+            !this.isCursorInUnwantedBlocks(view.editor)
           ) {
             if (typeof replaceCharacter === "string") {
               view.editor.replaceRange(
@@ -189,17 +189,25 @@ export default class SymbolsPrettifier extends Plugin {
     return result;
   }
 
-  private isCursorInCodeBlock(editor: Editor): boolean {
-    const codeBlock = /```\w*[^`]+```/;
-    const searchCursor = new SearchCursor(editor.getValue(), codeBlock, 0);
+  private isCursorInUnwantedBlocks(editor: Editor): boolean {
+    const unwantedBlocks = [/`\w*[^`]+`/, /```\w*[^`]+```/]; // inline code, full code
 
-    while (searchCursor.findNext() !== undefined) {
-      const offset = editor.posToOffset(editor.getCursor());
-      if (searchCursor.from() <= offset && searchCursor.to() >= offset) {
-        return true;
-      }
-    }
+    return (
+      unwantedBlocks.filter((unwantedBlock) => {
+        const searchCursor = new SearchCursor(
+          editor.getValue(),
+          unwantedBlock,
+          0,
+        );
+        while (searchCursor.findNext() !== undefined) {
+          const offset = editor.posToOffset(editor.getCursor());
+          if (searchCursor.from() <= offset && searchCursor.to() >= offset) {
+            return true;
+          }
+        }
 
-    return false;
+        return false;
+      }).length !== 0
+    );
   }
 }
