@@ -26,7 +26,6 @@ export class SearchCursor {
   public findNext(): RegExpMatchArray | undefined {
     const text = this.text.slice(this._caret);
     const match = text.match(this.regex);
-    console.log(text, match);
     if (match?.index == null) {
       return undefined;
     }
