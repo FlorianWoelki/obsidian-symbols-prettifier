@@ -148,6 +148,7 @@ export default class SymbolsPrettifier extends Plugin {
           if (
             replaceCharacter &&
             from !== -1 &&
+            typeof replaceCharacter !== "function" &&
             !this.isCursorInUnwantedBlocks(view.editor)
           ) {
             if (typeof replaceCharacter === "string") {
