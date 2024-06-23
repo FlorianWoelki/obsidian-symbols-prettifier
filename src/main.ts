@@ -129,6 +129,7 @@ export default class SymbolsPrettifier extends Plugin {
         const cursor = view.editor.getCursor();
         if (event.key === " ") {
           const line = view.editor.getLine(cursor.line);
+          console.log(line);
           let from = -1;
           let sequence = "";
           for (let i = cursor.ch - 1; i >= 0; i--) {
@@ -190,7 +191,7 @@ export default class SymbolsPrettifier extends Plugin {
   }
 
   private isCursorInUnwantedBlocks(editor: Editor): boolean {
-    const unwantedBlocks = [/`\w*[^`]+`/, /```\w*[^`]+```/]; // inline code, full code
+    const unwantedBlocks = [/(?<!`)`[^`\n]+`(?!`)/, /```\w*\s*[\s\S]*?```/]; // inline code, full code
 
     return (
       unwantedBlocks.filter((unwantedBlock) => {
