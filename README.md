@@ -1,5 +1,7 @@
 # Obsidian Symbols Prettifier
 
+![Preview Image](./assets/preview-image.png)
+
 ## What is it
 
 Did you ever want to prettify your arrows or symbols, like `->` or `<=>`?
