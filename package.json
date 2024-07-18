@@ -18,6 +18,9 @@
   "author": "Florian Woelki",
   "license": "MIT",
   "devDependencies": {
+    "@codemirror/language": "https://github.com/lishid/cm-language",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.26.0",
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
