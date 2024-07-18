@@ -28,6 +28,7 @@ export function getSymbolsLivePreviewPlugin(
       if (
         update.docChanged ||
         update.viewportChanged ||
+        update.selectionSet ||
         previousMode !== currentMode
       ) {
         this.decorations = symbols(update.view, plugin);

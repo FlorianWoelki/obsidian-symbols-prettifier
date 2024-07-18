@@ -7,15 +7,22 @@ import {
   RangeValue,
   StateField,
 } from "@codemirror/state";
-import SymbolsPrettifier, { getCharacterRegex } from "src/main";
+import SymbolsPrettifier, { characterMap, getCharacterRegex } from "src/main";
 
 class SymbolsPosition extends RangeValue {
-  constructor(public symbol: string) {
+  constructor(
+    public symbol: string,
+    public prettified: string,
+  ) {
     super();
   }
 
   eq(other: RangeValue): boolean {
-    return other instanceof SymbolsPosition && other.symbol === this.symbol;
+    return (
+      other instanceof SymbolsPosition &&
+      other.symbol === this.symbol &&
+      other.prettified === this.prettified
+    );
   }
 }
 
@@ -54,11 +61,14 @@ function iterateSymbolsRanges(
     for (const { 0: symbol, index: offset } of text.matchAll(
       getCharacterRegex(),
     )) {
-      addToRange(
-        from + offset,
-        from + offset + symbol.length,
-        new SymbolsPosition(symbol),
-      );
+      const prettified = characterMap[symbol] ?? symbol;
+      if (typeof prettified === "string") {
+        addToRange(
+          from + offset,
+          from + offset + symbol.length,
+          new SymbolsPosition(symbol, prettified),
+        );
+      }
     }
   };
 

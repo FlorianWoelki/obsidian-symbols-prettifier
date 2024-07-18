@@ -1,5 +1,5 @@
 import { EditorView, WidgetType } from "@codemirror/view";
-import SymbolsPrettifier, { characterMap } from "src/main";
+import SymbolsPrettifier from "src/main";
 
 export default class SymbolWidget extends WidgetType {
   constructor(
@@ -18,11 +18,7 @@ export default class SymbolWidget extends WidgetType {
       cls: "cm-sp-icon",
     });
 
-    const symbol = characterMap[this.symbol];
-    if (symbol && typeof symbol === "string") {
-      wrapper.append(symbol);
-    }
-
+    wrapper.append(this.symbol);
     return wrapper;
   }
 

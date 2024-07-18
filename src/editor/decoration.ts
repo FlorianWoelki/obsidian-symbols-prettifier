@@ -1,27 +1,40 @@
+import type { Range } from "@codemirror/state";
 import { Decoration, type EditorView } from "@codemirror/view";
 import SymbolsPrettifier from "src/main";
 import SymbolWidget from "./widget";
 import { editorLivePreviewField } from "obsidian";
 
 export default function symbols(view: EditorView, plugin: SymbolsPrettifier) {
-  const ranges: [symbol: string, from: number, to: number][] = [];
   const symbolsField = view.state.field(plugin.symbolsPositionField);
+  const cursor = view.state.selection.main.head;
+  const decorations: Range<Decoration>[] = [];
+
   for (const { from, to } of view.visibleRanges) {
-    symbolsField.between(from, to, (from, to, { symbol }) => {
-      ranges.push([symbol, from, to]);
+    symbolsField.between(from, to, (from, to, { symbol, prettified }) => {
+      const isNearCursor = cursor >= from && cursor <= to;
+      const widget = new SymbolWidget(
+        isNearCursor ? symbol : prettified,
+        plugin,
+      );
+      const spec = { widget, side: -1 };
+      if (view.state.field(editorLivePreviewField)) {
+        if (isNearCursor) {
+          for (let i = 0; i < symbol.length; i++) {
+            decorations.push(
+              Decoration.replace({
+                widget: new SymbolWidget(symbol[i], plugin),
+                inclusive: true,
+              }).range(from + i, from + i + 1),
+            );
+          }
+        } else {
+          decorations.push(Decoration.replace(spec).range(from, to));
+        }
+      } else {
+        decorations.push(Decoration.widget(spec).range(to));
+      }
     });
   }
 
-  return Decoration.set(
-    ranges.map(([symbol, from, to]) => {
-      const widget = new SymbolWidget(symbol, plugin);
-      const spec = { widget, side: -1, from, to };
-      if (view.state.field(editorLivePreviewField)) {
-        return Decoration.replace(spec).range(from, to);
-      } else {
-        return Decoration.widget(spec).range(to);
-      }
-    }),
-    true,
-  );
+  return Decoration.set(decorations, true);
 }
