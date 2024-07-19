@@ -32,8 +32,8 @@ export function symbolsPostProcessor(
         ]
           .sort((a, b) => (b.index as number) - (a.index as number))
           .map((arr) => ({ text: arr[0], index: arr.index }))) {
-          const symbol = characterMap[pattern];
-          if (!symbol || typeof symbol !== "string") {
+          const symbol = characterMap[pattern]?.transform;
+          if (!symbol) {
             continue;
           }
 

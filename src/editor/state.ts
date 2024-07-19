@@ -61,14 +61,12 @@ function iterateSymbolsRanges(
     for (const { 0: symbol, index: offset } of text.matchAll(
       getCharacterRegex(),
     )) {
-      const prettified = characterMap[symbol] ?? symbol;
-      if (typeof prettified === "string") {
-        addToRange(
-          from + offset,
-          from + offset + symbol.length,
-          new SymbolsPosition(symbol, prettified),
-        );
-      }
+      const prettified = characterMap[symbol]?.transform ?? symbol;
+      addToRange(
+        from + offset,
+        from + offset + symbol.length,
+        new SymbolsPosition(symbol, prettified),
+      );
     }
   };
 

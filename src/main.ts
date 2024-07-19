@@ -6,34 +6,27 @@ import {
 import { getSymbolsLivePreviewPlugin } from "./editor/plugin";
 import { symbolsPostProcessor } from "./markdown/processor";
 
-interface HTMLObject {
+interface SimpleTransform {
   transform: string;
+}
+
+interface ComplexTransform extends SimpleTransform {
   classes: string;
   element: string;
 }
 
 interface CharacterMap {
-  [key: string]: string | HTMLObject;
+  [key: string]: SimpleTransform | ComplexTransform;
 }
 
 export const characterMap: CharacterMap = {
-  "->": "→",
-  "<-": "←",
-  "<->": "↔",
-  "<=>": "⇔",
-  "<=": "⇐",
-  "=>": "⇒",
-  "--": "–",
-  "!important": {
-    transform: "!important",
-    classes: "symbols-prettifier-important",
-    element: '<span class="symbols-prettifier-important">!important</span>',
-  },
-  "?unclear": {
-    transform: "?unclear",
-    classes: "symbols-prettifier-unclear",
-    element: '<span class="symbols-prettifier-unclear">?unclear</span>',
-  },
+  "->": { transform: "→" },
+  "<-": { transform: "←" },
+  "<->": { transform: "↔" },
+  "<=>": { transform: "⇔" },
+  "<=": { transform: "⇐" },
+  "=>": { transform: "⇒" },
+  "--": { transform: "–" },
 };
 
 export function getCharacterRegex(): RegExp {
@@ -52,30 +45,6 @@ export default class SymbolsPrettifier extends Plugin {
     ]);
 
     this.registerMarkdownPostProcessor(symbolsPostProcessor(this));
-
-    this.addCommand({
-      id: "symbols-prettifier-add-important",
-      name: "Add important symbol",
-      editorCallback: (editor) => {
-        const cursor = editor.getCursor();
-        const symbol = characterMap["!important"];
-        if (typeof symbol !== "string") {
-          editor.replaceRange(symbol.element, cursor);
-        }
-      },
-    });
-
-    this.addCommand({
-      id: "symbols-prettifier-add-unclear",
-      name: "Add unclear symbol",
-      editorCallback: (editor) => {
-        const cursor = editor.getCursor();
-        const symbol = characterMap["?unclear"];
-        if (typeof symbol !== "string") {
-          editor.replaceRange(symbol.element, cursor);
-        }
-      },
-    });
   }
 
   onunload() {
