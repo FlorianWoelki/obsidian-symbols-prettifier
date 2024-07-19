@@ -30,8 +30,6 @@ export default function symbols(view: EditorView, plugin: SymbolsPrettifier) {
         } else {
           decorations.push(Decoration.replace(spec).range(from, to));
         }
-      } else {
-        decorations.push(Decoration.widget(spec).range(to));
       }
     });
   }
