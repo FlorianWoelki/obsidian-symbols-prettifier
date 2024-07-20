@@ -63,8 +63,8 @@ function iterateSymbolsRanges(
     )) {
       const prettified = characterMap[symbol]?.transform ?? symbol;
       addToRange(
-        from + offset,
-        from + offset + symbol.length,
+        from + (offset ?? 0),
+        from + (offset ?? 0) + symbol.length,
         new SymbolsPosition(symbol, prettified),
       );
     }
