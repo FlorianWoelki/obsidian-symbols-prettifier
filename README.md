@@ -12,7 +12,18 @@ With the help of this plugin, it is easier than ever before. This plugin allows 
 
 The easiest way to use the plugin is to install it and then try to type the following symbols. All of these symbols will be prettified:
 
-`->`, `<-`, `<->`, `<=>`, `<=`, `=>`
+| Text | Symbol |
+| ---- | ------ |
+| ->   | →      |
+| <-   | ←      |
+| <->  | ↔      |
+| <=>  | ⇔      |
+| <=   | ⇐      |
+| =>   | ⇒      |
+| =<   | ≤      |
+| >=   | ≥      |
+| +-   | ±      |
+| -+   | ∓      |
 
 ## Development
 
