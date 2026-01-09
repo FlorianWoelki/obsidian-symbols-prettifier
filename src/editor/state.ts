@@ -44,7 +44,12 @@ const allowedTypes = [
 	"hmd-footref2",
 	"footref",
 ];
-const excludedTypes = ["formatting", "comment-start", "comment-end"];
+const excludedTypes = [
+	"formatting",
+	"comment-start",
+	"comment-end",
+	"inline-code",
+];
 
 function iterateSymbolsRanges(
 	state: EditorState,
