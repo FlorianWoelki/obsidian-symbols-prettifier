@@ -75,6 +75,9 @@ function iterateSymbolsRanges(
 		}
 	};
 
+	const allowedTypesSet = new Set(allowedTypes);
+	const excludedTypesSet = new Set(excludedTypes);
+
 	let prevTo = from;
 	syntaxTree(state).iterate({
 		from: from - 1,
@@ -95,11 +98,12 @@ function iterateSymbolsRanges(
 			if (!nodeProps) {
 				return;
 			}
+
 			const props = new Set(nodeProps?.split(" "));
-			if (
-				excludedTypes.every((t) => !props.has(t)) &&
-				allowedTypes.some((t) => props.has(t))
-			) {
+			const hasExcluded = [...props].some((p) => excludedTypesSet.has(p));
+			const hasAllowed = [...props].some((p) => allowedTypesSet.has(p));
+
+			if (!hasExcluded && hasAllowed) {
 				saveToRange(from, to);
 			}
 		},
