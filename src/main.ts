@@ -29,6 +29,7 @@ export const characterMap: CharacterMap = {
 	"--": { transform: "–" },
 	"!=": { transform: "≠" },
 	"===": { transform: "≡" },
+	"=/=": { transform: "≠" },
 	"=<": { transform: "≤" },
 	">=": { transform: "≥" },
 	"+-": { transform: "±" },
@@ -36,7 +37,7 @@ export const characterMap: CharacterMap = {
 };
 
 export function getCharacterRegex(): RegExp {
-	return new RegExp("(<->|->|<-|<=>|<=|=>|--|!=|===|=<|>=|\\+\\-|\\-\\+)", "g");
+	return new RegExp("(<->|->|<-|<=>|<=|=>|--|!=|===|≠|=<|>=|\\+\\-|\\-\\+)", "g");
 }
 
 export default class SymbolsPrettifier extends Plugin {
