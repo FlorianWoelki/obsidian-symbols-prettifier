@@ -1,0 +1,3 @@
+allowBuilds:
+  "@codemirror/language": true
+  esbuild: true
