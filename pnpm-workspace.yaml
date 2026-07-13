@@ -1,3 +1,4 @@
 allowBuilds:
-  "@codemirror/language": true
+  '@codemirror/language@https://codeload.github.com/lishid/cm-language/tar.gz/2d416d7835867d1b1e8d0e726b147fc1135c9f92': true
+  '@codemirror/language': true
   esbuild: true
